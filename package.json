@@ -1,0 +1,23 @@
+{
+  "name": "mc-assistant",
+  "version": "0.0.0-development",
+  "description": "MC is a command-line assistant for developers",
+  "author": "Matt Lubner <matt@mattlubner.com>",
+  "contributors": [
+    "Matt Lubner <matt@mattlubner.com>"
+  ],
+  "bin": {
+    "mc": "bin/mc"
+  },
+  "homepage": "https://github.com/mattlubner/mc-assistant",
+  "bugs": "https://github.com/mattlubner/mc-assistant/issues",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mattlubner/mc-assistant.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2"
+  }
+}

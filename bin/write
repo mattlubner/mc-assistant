@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+// Usage: write <filePath> <keyPath> <value>
+
+const { readFileSync, writeFileSync } = require('fs');
+const { normalize } = require('path');
+const set = require('lodash.set');
+
+const filePath = process.argv[2];
+const keyPath = process.argv[3];
+const value = process.argv[4];
+
+let fileData;
+try {
+  const fileJson = readFileSync(normalize(filePath), 'utf8');
+  fileData = JSON.parse(fileJson || '{}');
+} catch (err) {
+  fileData = {};
+}
+
+if (value) {
+  set(fileData, keyPath, value);
+} else {
+  // if value is undefined, keyPath is actually value
+  fileData = JSON.parse(keyPath);
+}
+writeFileSync(normalize(filePath), JSON.stringify(fileData, null, '  '));

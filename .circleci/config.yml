@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  release:
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn semantic-release
+workflows:
+  version: 2
+  release:
+    jobs:
+      - release:
+          filters:
+            branches:
+              only: master

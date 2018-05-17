@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+// Usage: read <filePath> <keyPath>
+
+const { readFileSync } = require('fs');
+const { normalize } = require('path');
+const get = require('lodash.get');
+
+const filePath = process.argv[2];
+const keyPath = process.argv[3];
+
+let fileData;
+try {
+  const fileJson = readFileSync(normalize(filePath), 'utf8');
+  fileData = JSON.parse(fileJson || '{}');
+} catch (err) {
+  fileData = {};
+}
+
+const data = !!keyPath
+  ? get(fileData, keyPath)
+  : fileData;
+const value = (typeof data === 'string')
+  ? data
+  : JSON.stringify(data, null, '  ');
+
+process.stdout.write(value || 'undefined');
