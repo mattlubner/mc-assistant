@@ -16,7 +16,10 @@ done
 project_path="$( dirname "$( cd -P "$( dirname "${script_path}" )" && pwd )" )"
 config_path="${HOME}/.mc-assistant.json"
 
-script_help="Usage: mc hi|go|in <command>"
+script_help_hi="mc hi <project_name> [<project_path>]"
+script_help_in="mc in <project_name> <shell_commands>"
+script_help_go=". mc go <project_name>"
+script_help="Usage: mc hi|in|go\n  ${script_help_hi}\n  ${script_help_in}\n  ${script_help_go}"
 
 function _cleanup() {
   unset -f _cleanup
@@ -32,20 +35,6 @@ function _cleanup() {
 }
 trap _cleanup EXIT
 
-for arg in "${@}"
-do
-  case "${arg}" in
-    '-h')
-      echo "${script_help}"
-      _exit
-      ;;
-    '--help')
-      echo "${script_help}"
-      _exit
-      ;;
-  esac
-done
-
 # Usage: _exit [<code>]
 function _exit() {
   if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -57,28 +46,52 @@ function _exit() {
   fi
 }
 
-# Usage: _read <key>
+# Usage: _read <key> [-n]
 function _read() {
-  "${project_path}/bin/read" "${config_path}" "${1}"
+  local key="${1}"
+  shift
+  "${project_path}/bin/read" "${config_path}" "${key}" ${@}
 }
 
 # Usage: _write <key> <value>
 function _write() {
-  "${project_path}/bin/write" "${config_path}" "${1}" "${2}"
+  local key="${1}"
+  local value="${2}"
+  shift
+  shift
+  "${project_path}/bin/write" "${config_path}" "${key}" "${value}" ${@}
 }
 
-# Usage: _hi <project_name> [<project_path>]
+# Usage: _hi [-h|--help] <project_name> [<project_path>]
 function _hi() {
-  local abs_project_path="$(node -p "require('path').resolve('${2}')")"
-  _write "projects.${1}" "${abs_project_path}"
-  echo "Project ${1} (path='${abs_project_path}') has been registered with mc-assistant!"
+  if [ ${#} -lt 1 ]; then
+    echo "Missing argument: <project_name> is required!" 2>&1
+    echo "Usage: ${script_help_hi}" 2>&1
+    echo -e "Known projects:\n  $( node -p "Object.keys(JSON.parse('$( _read "projects" -n )')).join('\n  ')" )" 2>&1
+    _exit 1
+  elif [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+    echo "Usage: ${script_help_hi}"
+    _exit
+  else
+    local abs_project_path="$( node -p "require('path').resolve('${2}')" )"
+    _write "projects.${1}" "${abs_project_path}"
+    echo "Project ${1} (path='${abs_project_path}') has been registered with mc-assistant!"
+  fi
 }
 
-# Usage: _go <project_name>
+# Usage: _go [-h|--help] <project_name>
 function _go() {
   if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo "Please source mc to change your working directory:" 2>&1
-    echo ". mc go ${1}" 2>&1
+    echo "Usage: ${script_help_go}" 2>&1
+    _exit 1
+  elif [ ${#} -lt 1 ]; then
+    echo "Missing argument: <project_name> is required!" 2>&1
+    echo "Usage: ${script_help_go}" 2>&1
+    _exit 1
+  elif [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+    echo "Usage: ${script_help_go}"
+    _exit
   else
     local project_dir="$( _read "projects.${1}" )"
     if [ "${project_dir}" == "undefined" ]; then
@@ -88,16 +101,29 @@ function _go() {
       echo "Invalid project directory: ${project_dir}" 2>&1
       _exit 1
     else
-      cd "$( _read "projects.${1}" )"
+      cd "${project_dir}"
     fi
   fi
 }
 
-# Usage: _in <project_name> [<shell_commands>...]
+# Usage: _in [-h|--help] <project_name> [<shell_commands>...]
 function _in() {
-  local project_name="${1}"
-  shift
-  cd "$( _read "projects.${project_name}" )" && ${@}
+  if [ ${#} -lt 1 ]; then
+    echo "Missing argument: <project_name> is required!" 2>&1
+    echo "Usage: ${script_help_in}" 2>&1
+    _exit 1
+  elif [ ${#} -lt 2 ]; then
+    echo "Missing arguments: No commands specified!" 2>&1
+    echo "Usage: ${script_help_in}" 2>&1
+    _exit 1
+  elif [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
+    echo "Usage: ${script_help_in}"
+    _exit
+  else
+    local project_name="${1}"
+    shift
+    cd "$( _read "projects.${project_name}" )" && ${@}
+  fi
 }
 
 case "${1}" in
@@ -122,11 +148,17 @@ case "${1}" in
     _write ${@}
     ;;
   'help')
-    echo "${script_help}"
+    echo -e "${script_help}"
+    ;;
+  '--help')
+    echo -e "${script_help}"
+    ;;
+  '-h')
+    echo -e "${script_help}"
     ;;
   *)
     echo "Invalid command: ${1}" 1>&2
-    echo "${script_help}" 1>&2
+    echo -e "${script_help}" 1>&2
     _exit 1
     ;;
 esac

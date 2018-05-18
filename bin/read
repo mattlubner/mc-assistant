@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Usage: read <filePath> <keyPath>
+// Usage: read <filePath> <keyPath> [-n]
 
 const { readFileSync } = require('fs');
 const { normalize } = require('path');
@@ -8,6 +8,7 @@ const get = require('lodash.get');
 
 const filePath = process.argv[2];
 const keyPath = process.argv[3];
+const shouldFormat = process.argv[4] !== '-n';
 
 let fileData;
 try {
@@ -22,6 +23,6 @@ const data = !!keyPath
   : fileData;
 const value = (typeof data === 'string')
   ? data
-  : JSON.stringify(data, null, '  ');
+  : JSON.stringify(data, null, shouldFormat ? '  ' : null);
 
 process.stdout.write(value || 'undefined');
