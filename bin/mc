@@ -123,6 +123,7 @@ function _in() {
     local project_name="${1}"
     shift
     cd "$( _read "projects.${project_name}" )" && ${@}
+    cd - >/dev/null
   fi
 }
 
