@@ -14,8 +14,8 @@ yarn global add mc-assistant
 
 ## Commands
 
-#### `mc hi <project_name> <project_path>`
-Registers a new project path and name with mc-assistant.
+#### `mc hi <project_name> [<project_path>]`
+Registers a project path by name with mc-assistant. If `<project_path>` is omitted, the current working directory is used.
 
 #### `mc in <project_name> <shell_commands>`
 Runs any arbitrary shell commands within the registered project's directory, without changing the shell's current working directory.

@@ -67,7 +67,7 @@ function _write() {
   "${project_path}/bin/write" "${config_path}" "${1}" "${2}"
 }
 
-# Usage: _hi <project_name> <project_path>
+# Usage: _hi <project_name> [<project_path>]
 function _hi() {
   local abs_project_path="$(node -p "require('path').resolve('${2}')")"
   _write "projects.${1}" "${abs_project_path}"
